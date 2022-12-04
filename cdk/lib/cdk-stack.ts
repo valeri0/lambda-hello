@@ -5,7 +5,10 @@ import { Construct } from "constructs";
 var path = require("path");
 
 export class CdkStack extends cdk.Stack {
-  private readonly LAMBDA_DIRECTORY = path.resolve(__dirname, "../../lambda/");
+  private readonly LAMBDA_DIRECTORY = path.resolve(
+    __dirname,
+    "../../lambda/src"
+  );
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -14,7 +17,7 @@ export class CdkStack extends cdk.Stack {
       this,
       `${this.stackName}-lambda-layer`,
       {
-        code: lambda.Code.fromAsset(path.join(this.LAMBDA_DIRECTORY, "src")),
+        code: lambda.Code.fromAsset(path.join(this.LAMBDA_DIRECTORY, "layers")),
         compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
         description: "Scammer class layer for the hello lambda python",
       }
@@ -24,9 +27,7 @@ export class CdkStack extends cdk.Stack {
       this,
       `${this.stackName}-lambda-function`,
       {
-        code: lambda.Code.fromAsset(
-          path.join(this.LAMBDA_DIRECTORY, "index.py")
-        ),
+        code: lambda.Code.fromAsset(path.join(this.LAMBDA_DIRECTORY, "index")),
         handler: "index.lambda_handler",
         runtime: lambda.Runtime.PYTHON_3_9,
         layers: [scammer_layer],

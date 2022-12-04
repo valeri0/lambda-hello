@@ -1,5 +1,5 @@
 import pytest
-from src.scammer import Scammer
+from src.index import Scammer
 
 @pytest.fixture()
 def shared_scammer_obj():
