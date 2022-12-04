@@ -1,4 +1,4 @@
-# lambda-hello
+# lambda-rest-api
 
 ## Description
 
