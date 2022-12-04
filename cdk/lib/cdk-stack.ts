@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 
 var path = require("path");
@@ -10,28 +11,39 @@ export class CdkStack extends cdk.Stack {
     "../../lambda/src"
   );
 
+  private lambda: lambda.Function;
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const scammer_layer = new lambda.LayerVersion(
-      this,
-      `${this.stackName}-lambda-layer`,
-      {
-        code: lambda.Code.fromAsset(path.join(this.LAMBDA_DIRECTORY, "layers")),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
-        description: "Scammer class layer for the hello lambda python",
-      }
-    );
+    this.createLambda();
+    this.createApiGateway();
+  }
 
-    const lambda_function = new lambda.Function(
+  private createLambda() {
+    this.lambda = new lambda.Function(
       this,
       `${this.stackName}-lambda-function`,
       {
-        code: lambda.Code.fromAsset(path.join(this.LAMBDA_DIRECTORY, "index")),
+        code: lambda.Code.fromAsset(this.LAMBDA_DIRECTORY),
         handler: "index.lambda_handler",
         runtime: lambda.Runtime.PYTHON_3_9,
-        layers: [scammer_layer],
       }
     );
+  }
+
+  private createApiGateway() {
+    const api = new apigateway.LambdaRestApi(
+      this,
+      `${this.stackName}-api-gateway`,
+      {
+        handler: this.lambda,
+        proxy: false,
+      }
+    );
+
+    // will allow only POST <url>/hello?input=<x> requests for the lambda
+    const hello_resource = api.root.addResource("hello");
+    hello_resource.addMethod("POST");
   }
 }
